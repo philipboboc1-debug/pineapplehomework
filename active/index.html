@@ -2,60 +2,42 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Classroom</title>
-    <link rel="icon" href="https://ssl.gstatic.com/classroom/favicon.png">
-    
-    <script src="uv/uv.bundle.js" defer></script>
+    <title>Physics Lab</title> <link rel="icon" href="https://ssl.gstatic.com/classroom/favicon.png"> <script src="uv/uv.bundle.js" defer></script>
     <script src="uv/uv.config.js" defer></script>
     <script src="baremux/index.js" defer></script>
 
     <style>
-        body { font-family: sans-serif; background: #111; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        input { padding: 15px; width: 400px; border-radius: 25px; border: none; outline: none; font-size: 16px; }
-        button { padding: 10px 20px; margin-top: 15px; border-radius: 20px; border: none; cursor: pointer; background: #444; color: white; transition: 0.3s; }
-        button:hover { background: #666; }
+        body { font-family: sans-serif; background: #000; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        input { padding: 15px; width: 350px; border-radius: 30px; border: 1px solid #444; background: #222; color: white; outline: none; text-align: center; }
+        button { margin-top: 20px; padding: 10px 25px; border-radius: 20px; border: none; background: #333; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <h1>Search</h1>
-    <form id="uv-form">
-        <input id="uv-address" type="text" placeholder="Search Google or type a URL" required>
-        <br>
-        <center><button type="submit">Launch</button></center>
+    <form id="proxy-form">
+        <input id="proxy-address" type="text" placeholder="Enter URL or search..." required>
+        <br><button type="submit">Go</button>
     </form>
 
     <script>
-        const form = document.getElementById('uv-form');
-        const address = document.getElementById('uv-address');
-
-        // Setup Bare-Mux for Vercel Compatibility
+        // Connects to the Wisp server (The "Bridge")
         window.addEventListener('load', async () => {
-            if ('serviceWorker' in navigator) {
-                await navigator.serviceWorker.register('/uv/sw.js', { scope: '/uv/service/' });
-            }
-            
             const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-            // Vercel doesn't support Wisp well, so we force a reliable Bare Transport
-            if (!await connection.getTransport()) {
-                await connection.setTransport("/baremod/index.mjs", [__uv$config.bare]);
-            }
+            // This is the fastest Wisp server for 2026
+            await connection.setTransport("/epoxy/index.mjs", [{ wisp: "wss://wisp.mercurywork.shop/" }]);
         });
 
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
+        document.getElementById('proxy-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('proxy-address').value;
+            let url = input.trim();
             
-            let url = address.value.trim();
-            if (!(url.startsWith('https://') || url.startsWith('http://'))) {
-                if (url.includes('.') && !url.includes(' ')) {
-                    url = 'https://' + url;
-                } else {
-                    url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
-                }
+            if (!url.startsWith('http')) {
+                url = url.includes('.') && !url.includes(' ') ? 'https://' + url : 'https://www.google.com/search?q=' + encodeURIComponent(url);
             }
 
-            // Redirect to the proxied URL
+            // Registers the Service Worker and Launches
+            await navigator.serviceWorker.register('./uv/sw.js', { scope: __uv$config.prefix });
             window.location.href = __uv$config.prefix + __uv$config.encodeUrl(url);
         });
     </script>
