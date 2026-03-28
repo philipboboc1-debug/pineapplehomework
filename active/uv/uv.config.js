@@ -1,12 +1,11 @@
-/* Ultraviolet Configuration for Vercel 2026 */
 self.__uv$config = {
-    prefix: '/uv/service/',
-    bare: 'https://uv.student-info.xyz/bare/', 
+    prefix: "/uv/service/",
+    bare: "https://uv.student-info.xyz/bare/", // Backup Bare server
     encodeUrl: Ultraviolet.codec.xor.encode,
     decodeUrl: Ultraviolet.codec.xor.decode,
-    handler: '/uv/uv.handler.js',
-    client: '/uv/uv.client.js',
-    bundle: '/uv/uv.bundle.js',
-    config: '/uv/uv.config.js',
-    sw: '/uv/uv.sw.js',
+    handler: "/uv/uv.handler.js",
+    client: "/uv/uv.client.js",
+    bundle: "/uv/uv.bundle.js",
+    config: "/uv/uv.config.js",
+    sw: "/uv/uv.sw.js",
 };
