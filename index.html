@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <html>
+  <script src="baremux/index.js"></script>
+<script>
+  window.addEventListener('load', async () => {
+    const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+    // Wisp is the fastest/lightest way to connect in 2026
+    await connection.setTransport("/epoxy/index.mjs", [{ wisp: "wss://wisp.mercurywork.shop/" }]);
+  });
+</script>
 <head>
   <title>Redirect Page</title>
   <script>
