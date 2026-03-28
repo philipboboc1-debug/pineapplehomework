@@ -1,5 +1,14 @@
 <!DOCTYPE html>
 <html>
+   <script src="baremux/index.js"></script>
+<script>
+  window.addEventListener('load', async () => {
+    const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+    // This bypasses the security errors by using a WebSocket tunnel
+    await connection.setTransport("/epoxy/index.mjs", [{ wisp: "wss://wisp.mercurywork.shop/" }]);
+    console.log("Stealth connection active.");
+  });
+</script>
    <head>
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>LupineVault - Free Web Browser - School Safe & 100% Teacher Approved!</title>
