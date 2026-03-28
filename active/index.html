@@ -1,47 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Classroom</title>
+    <link rel="icon" href="https://ssl.gstatic.com/classroom/favicon.png">
+    
     <script src="uv/uv.bundle.js" defer></script>
     <script src="uv/uv.config.js" defer></script>
     <script src="baremux/index.js" defer></script>
+
     <style>
-        body { background: #111; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        input { padding: 12px; width: 300px; border-radius: 20px; border: none; }
-        button { padding: 10px 20px; margin-top: 10px; cursor: pointer; border-radius: 20px; border: none; background: #444; color: white; }
+        body { background: #0b0b0b; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .container { text-align: center; }
+        input { padding: 15px 25px; width: 350px; border-radius: 50px; border: 1px solid #333; background: #1a1a1a; color: white; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus { border-color: #555; box-shadow: 0 0 10px rgba(255,255,255,0.1); }
+        button { margin-top: 20px; padding: 12px 30px; border-radius: 50px; border: none; background: #fff; color: #000; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #ccc; transform: scale(1.05); }
+        #status { margin-top: 15px; font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
-    <h1>Search</h1>
-    <input id="url" type="text" placeholder="Enter URL or Search...">
-    <button id="btn">Go</button>
+
+    <div class="container">
+        <h1>Search Archive</h1>
+        <form id="uv-form">
+            <input id="uv-address" type="text" placeholder="Search Google or enter a URL..." autocomplete="off">
+            <br>
+            <button type="submit" id="uv-btn">Launch</button>
+        </form>
+        <div id="status">Connecting to transport...</div>
+    </div>
 
     <script>
-        const btn = document.getElementById('btn');
-        const input = document.getElementById('url');
+        const form = document.getElementById('uv-form');
+        const address = document.getElementById('uv-address');
+        const status = document.getElementById('status');
 
-        // FORCE REGISTER THE WORKER ON LOAD
+        // 1. Initialize the connection as soon as the page loads
         window.addEventListener('load', async () => {
             try {
-                await navigator.serviceWorker.register('./uv/sw.js', { scope: '/uv/service/' });
-                const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-                await connection.setTransport("/epoxy/index.mjs", [{ wisp: "wss://wisp.mercurywork.shop/" }]);
-                console.log("Ready to go.");
-            } catch (e) {
-                console.error("Worker failed:", e);
+                // Register the Service Worker (the "Tunnel")
+                if ('serviceWorker' in navigator) {
+                    await navigator.serviceWorker.register('./uv/sw.js', { scope: '/uv/service/' });
+                }
+
+                // Setup BareMux (The "Engine")
+                // We use a try/catch loop to wait for the script to actually exist
+                const interval = setInterval(async () => {
+                    if (typeof BareMux !== 'undefined') {
+                        clearInterval(interval);
+                        const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+                        
+                        // Use a Wisp server (Best for 2026/Vercel)
+                        await connection.setTransport("/epoxy/index.mjs", [{ wisp: "wss://wisp.mercurywork.shop/" }]);
+                        status.innerText = "Connection Ready ✅";
+                        status.style.color = "#4caf50";
+                    }
+                }, 500);
+
+            } catch (err) {
+                status.innerText = "Connection Failed ❌";
+                console.error(err);
             }
         });
 
-        // THE "GO" LOGIC
-        btn.onclick = async () => {
-            let url = input.value.trim();
-            if (!url.startsWith('http')) {
-                url = url.includes('.') && !url.includes(' ') ? 'https://' + url : 'https://www.google.com/search?q=' + encodeURIComponent(url);
-            }
+        // 2. Handle the "Go" button click
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
             
-            // This is the direct launch command
-            window.location.href = __uv$config.prefix + __uv$config.encodeUrl(url);
-        };
+            const url = address.value.trim();
+            let encodedUrl = "";
+
+            // Check if it's a URL or a Search query
+            if (url.includes('.') && !url.includes(' ')) {
+                encodedUrl = url.startsWith('http') ? url : 'https://' + url;
+            } else {
+                encodedUrl = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+            }
+
+            // Redirect using the UV prefix
+            window.location.href = __uv$config.prefix + __uv$config.encodeUrl(encodedUrl);
+        });
     </script>
 </body>
 </html>
