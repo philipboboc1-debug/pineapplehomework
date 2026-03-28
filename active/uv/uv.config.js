@@ -1,5 +1,6 @@
 self.__uv$config = {
     prefix: "/uv/service/",
+    /* This server is currently the most stable for Vercel/Home PC */
     bare: "https://uv.student-info.xyz/bare/", 
     encodeUrl: Ultraviolet.codec.xor.encode,
     decodeUrl: Ultraviolet.codec.xor.decode,
